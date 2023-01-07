@@ -5,12 +5,17 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.runtime.Composable
+import androidx.datastore.preferences.preferencesDataStore
+import androidx.compose.runtime.livedata.observeAsState
 import android.util.Log
 import android.widget.Toast
 import androidx.compose.ui.unit.sp
@@ -22,6 +27,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.background
@@ -37,21 +43,30 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.modifier.modifierLocalConsumer
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.toUpperCase
 import androidx.constraintlayout.compose.ConstraintLayout
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import android.content.Context
+import android.content.SharedPreferences
+import androidx.lifecycle.ViewModel
 import com.example.jetpackcomposeapp4.ui.theme.ListLevel
 import com.example.jetpackcomposeapp4.ui.theme.Slz
+import kotlinx.coroutines.CoroutineScope
 
 class MainActivity : ComponentActivity() {
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+
         setContent {
-          //  BasicsCodelabTheme {
                 MyApp(modifier = Modifier.fillMaxSize())
             }
-      //  }
     }
 }
 
@@ -64,7 +79,7 @@ fun MyApp(modifier: Modifier = Modifier) {
         if (shouldShowOnboarding) {
             OnboardingScreen(onContinueClicked = { shouldShowOnboarding = false })
         } else {
-            Greetings()
+            Greeting()
         }
     }
 }
@@ -75,7 +90,8 @@ fun OnboardingScreen(
     modifier: Modifier = Modifier,
 
 ) {
-    val data = listOf("☕️", "🙂", "🥛", "🎉", "📐", "🎯", "🧩", "😄", "🥑","","",3,4,5,6,6,8,8,4)
+
+
     ConstraintLayout(modifier = Modifier.fillMaxSize()) {
         val (column1,column2,column3) = createRefs()
         val lstclm= listOf(column1,column2,column3)
@@ -95,7 +111,7 @@ fun OnboardingScreen(
                 top.linkTo(lstclm[nc-1].top, margin = lcl2);
             }}
 
-    ) { items(data.subList(0,10-(2*nc))){
+    ) { items((List(10){0}).subList(0,10-(2*nc))){
         //data.indexOf(element = item)!=8
 
                 Box(
@@ -127,17 +143,7 @@ fun OnboardingScreen(
     }
 }}}
 
-@Composable
-private fun Greetings(
-    modifier: Modifier = Modifier,
-    names: List<String> = listOf("World", "Compose")
-) {
-    Column(modifier = modifier.padding(vertical = 4.dp)) {
-        for (name in names) {
-            Greeting(name = name)
-        }
-    }
-}
+
 
 @Preview(showBackground = true, widthDp = 320, heightDp = 320)
 @Composable
@@ -163,18 +169,19 @@ fun Crqdrscreen(lstdq: MutableList<QdrScreen>, lv:Int) {
 }
 
 @Composable
-private fun Greeting(name: String) {
+private fun Greeting() {
     val context= LocalContext.current
 
-    val expanded = remember { mutableStateOf(false) }
 
-    val extraPadding = if (expanded.value) 48.dp else 0.dp
+
+
+
     var lstdq:MutableList<QdrScreen> = mutableListOf()
     Crqdrscreen(lstdq,0)
     for (qdr:QdrScreen in lstdq){
         Log.e("QDR"+"_"+qdr.idx.toString(),qdr.typ+"__"+qdr.chsl)
     }
-    val data = listOf("☕️", "🙂", "🥛", "🎉", "📐", "🎯", "🧩", "😄", "🥑","","",3,4,5,6,6,8,8,4)
+
     ConstraintLayout(modifier = Modifier.fillMaxSize()) {
         val (column2_1,column2_2,column2_3,column2_4,column2_5,column2_6,column2_7,column2_8,column2_9,column2_10) = createRefs()
         val lstclm= listOf(column2_1,column2_2,column2_3,column2_4,column2_5,column2_6,column2_7,column2_8,column2_9,column2_10)
@@ -211,10 +218,6 @@ private fun Greeting(name: String) {
                         .background(
                             color = lc[(lc.indices).random()]
                         )){
-
-
-
-
                 Button(
                     modifier = Modifier
                         .width(LocalConfiguration.current.screenWidthDp.dp / 6)
@@ -225,10 +228,6 @@ private fun Greeting(name: String) {
                         ,
                     onClick = {
                         Toast.makeText(context, generataButtonText(it),4).show()
-
-
-
-
                     }
                     //contentPadding = PaddingValues(
                 ){
@@ -261,7 +260,6 @@ private fun Greeting(name: String) {
 
                         }
 
-
                 BasicTextField(modifier = Modifier
                     .width(LocalConfiguration.current.screenWidthDp.dp / 6)
                     .height(LocalConfiguration.current.screenHeightDp.dp / 10)
@@ -275,41 +273,13 @@ private fun Greeting(name: String) {
                         readOnlyVar = (it.text.uppercase()==szqd.uppercase())
                         if (readOnlyVar){
                             colorTx= Color.White
-
-
-
-                        } else{
+                            } else{
                             colorTx=Color.Magenta
-
-
-
                         }
-
                 },
-
 
                     textStyle = LocalTextStyle.current.copy(color = colorTx, textAlign = TextAlign.Center, fontSize = 40.sp))
 
-                  //  textStyle = LocalTextStyle.current.copy(color = Color.White, textAlign = TextAlign.Center){
-
-    //Surface(
-       // color = MaterialTheme.colorScheme.primary,
-     //   modifier = Modifier.padding(vertical = 4.dp, horizontal = 8.dp)
-   //) {
-     //   Row(modifier = Modifier.padding(24.dp)) {
-      //      Column(modifier = Modifier
-       //         .weight(1f)
-        //        .padding(bottom = extraPadding)
-        //    ) {
-        //       Text(text = "Hello, ")
-        //      Text(text = name)
-        //   }
-        //   ElevatedButton(
-        //       onClick = { expanded.value = !expanded.value }
-        //   ) {
-        //      Text(if (expanded.value) "Show less" else "Show more")
-
-        //  }
         }
     }}}}}}
 fun generataButtonText(qdr:QdrScreen): String {
@@ -334,7 +304,7 @@ fun generataButtonText(qdr:QdrScreen): String {
 @Composable
 fun DefaultPreview() {
     //BasicsCodelabTheme {
-        Greetings()
+        Greeting()
   //  }
 }
 

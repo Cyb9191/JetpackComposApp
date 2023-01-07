@@ -5,12 +5,12 @@ plugins {
 
 android {
     namespace 'com.example.jetpackcomposeapp4'
-    compileSdk 32
+    compileSdk 33
 
     defaultConfig {
         applicationId "com.example.jetpackcomposeapp4"
         minSdk 21
-        targetSdk 32
+        targetSdk 33
         versionCode 1
         versionName "1.0"
 
@@ -48,7 +48,9 @@ android {
 
 dependencies {
 
+    implementation "androidx.compose.runtime:runtime-livedata:1.3.2"
     implementation 'androidx.core:core-ktx:1.7.0'
+    implementation "androidx.datastore:datastore-preferences:1.0.0-alpha08"
     implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.3.1'
     implementation 'androidx.activity:activity-compose:1.3.1'
     implementation "androidx.compose.ui:ui:$compose_version"
